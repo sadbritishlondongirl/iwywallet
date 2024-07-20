@@ -20,9 +20,9 @@
         }
         
         @keyframes fall {
-            0% { transform: translateY(-100%) translateX(0); }
-            50% { transform: translateY(50%) translateX(20px); }
-            100% { transform: translateY(100%) translateX(0); }
+            0% { transform: translateY(-100%); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(100vh); }
         }
 
         .clover {
@@ -98,12 +98,12 @@
             const clover = document.createElement('div');
             clover.className = 'clover';
             clover.style.left = `${Math.random() * 100}%`;
-            clover.style.animationDelay = `${Math.random() * 10}s`;
+            clover.style.animationDelay = `${Math.random() * 5}s`;
             document.body.appendChild(clover);
         }
 
-        for (let i = 0; i < 20; i++) {
-            createClover();
+        for (let i = 0; i < 10; i++) {
+            setTimeout(createClover, i * 1000);
         }
     </script>
 </body>
