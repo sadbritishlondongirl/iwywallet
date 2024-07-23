@@ -127,7 +127,7 @@
 <body>
     <div class="container">
         <h1>The wallet will be available soon</h1>
-        <div class="message" id="clover-message"></div>
+        <div class="message" id="clover-message">You found a clover!</div>
         <a href="https://iwypxe.fun" class="button">Back to site</a>
     </div>
     <div class="footer">© 2024 with love saiva & iwy pxe team</div>
@@ -183,11 +183,9 @@
 
         const displayMessage = () => {
             const message = document.getElementById('clover-message');
-            message.innerHTML = "You found a clover!";
             message.style.opacity = 1;
             setTimeout(() => {
                 message.style.opacity = 0;
-                message.innerHTML = "";
             }, 2000);
         }
 
