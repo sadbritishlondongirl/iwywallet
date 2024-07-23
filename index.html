@@ -18,21 +18,16 @@
             color: #fff;
             font-family: Arial, sans-serif;
         }
-        
-        @keyframes fall {
-            0% { transform: translateY(-100%); opacity: 0; }
-            10% { opacity: 1; }
-            100% { transform: translateY(100vh); }
-        }
 
         .clover {
             position: absolute;
-            top: -50px; /* чтобы клеверы начинали за пределами экрана */
+            top: -50px;
             width: 50px;
             height: 50px;
             background: url('images/iwyclover.png') no-repeat center center;
             background-size: cover;
-            animation: fall linear infinite;
+            pointer-events: auto;
+            animation: fall linear forwards;
         }
 
         .clover:nth-child(odd) {
@@ -53,6 +48,19 @@
             animation: textAnim 2s linear infinite;
         }
 
+        .container .message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100%); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(100vh); }
+        }
+
         @keyframes textAnim {
             0% { opacity: 0; }
             50% { opacity: 1; }
@@ -69,6 +77,8 @@
             text-decoration: none;
             font-size: 1.2em;
             transition: background-color 0.3s, color 0.3s;
+            z-index: 2;
+            pointer-events: auto;
         }
 
         .button:hover {
@@ -83,28 +93,123 @@
             text-align: center;
             font-size: 1em;
         }
+
+        @keyframes explode {
+            0% { opacity: 1; transform: translate(0, 0); }
+            100% { opacity: 0; transform: translate(var(--translate-x), var(--translate-y)); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: lime;
+            opacity: 0;
+            animation: explode 1s forwards;
+        }
+
+        .background-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            opacity: 0.5;
+            border-radius: 50%;
+            animation: moveParticle linear infinite;
+        }
+
+        @keyframes moveParticle {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-200vh); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>The wallet will be available soon</h1>
+        <div class="message" id="clover-message"></div>
         <a href="https://iwypxe.fun" class="button">Back to site</a>
     </div>
     <div class="footer">© 2024 with love saiva & iwy pxe team</div>
-    
+
     <script>
-        // Generate falling clovers
+        // Limit the number of clovers
+        const maxClovers = 50;
+        let cloverCount = 0;
+
         const createClover = () => {
+            if (cloverCount >= maxClovers) return;
             const clover = document.createElement('div');
             clover.className = 'clover';
             clover.style.left = `${Math.random() * 100}%`;
-            clover.style.animationDelay = `${Math.random() * 5}s`;
+            clover.style.animationDuration = `${Math.random() * 5 + 10}s`;
+            clover.onclick = explodeClover;
             document.body.appendChild(clover);
+            cloverCount++;
+
+            // Remove the clover after animation ends
+            clover.addEventListener('animationend', () => {
+                clover.remove();
+                cloverCount--;
+            });
         }
 
-        for (let i = 0; i < 10; i++) {
-            setTimeout(createClover, i * 1000);
+        const explodeClover = (event) => {
+            const clover = event.target;
+            const rect = clover.getBoundingClientRect();
+            for (let i = 0; i < 20; i++) {
+                createParticle(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            }
+            clover.remove();
+            cloverCount--;
+            displayMessage();
         }
+
+        const createParticle = (x, y) => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = `${x}px`;
+            particle.style.top = `${y}px`;
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = Math.random() * 100;
+            particle.style.setProperty('--translate-x', `${Math.cos(angle) * distance}px`);
+            particle.style.setProperty('--translate-y', `${Math.sin(angle) * distance}px`);
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 1000);
+        }
+
+        const displayMessage = () => {
+            const message = document.getElementById('clover-message');
+            message.innerHTML = "You found a clover!";
+            message.style.opacity = 1;
+            setTimeout(() => {
+                message.style.opacity = 0;
+                message.innerHTML = "";
+            }, 2000);
+        }
+
+        // Continuously generate new clovers with a limit
+        setInterval(createClover, 1000);
+
+        // Generate background particles
+        const createBackgroundParticle = () => {
+            const particle = document.createElement('div');
+            particle.className = 'background-particle';
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}vh`;
+            particle.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 10000);
+        }
+
+        // Continuously generate background particles
+        setInterval(createBackgroundParticle, 200);
     </script>
 </body>
 </html>
