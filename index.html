@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>iwy pxe Wallet</title>
     <style>
         body, html {
@@ -28,6 +28,7 @@
             background-size: cover;
             pointer-events: auto;
             animation: fall linear forwards;
+            z-index: 0; /* Ensure clovers are behind the text */
         }
 
         .clover:nth-child(odd) {
@@ -41,18 +42,12 @@
         .container {
             text-align: center;
             z-index: 1;
+            pointer-events: none; /* Allow clicks to pass through the text container */
         }
 
         .container h1 {
             font-size: 3em;
             animation: textAnim 2s linear infinite;
-        }
-
-        .container .message {
-            margin-top: 20px;
-            font-size: 1.5em;
-            opacity: 0;
-            transition: opacity 0.5s;
         }
 
         @keyframes fall {
@@ -122,20 +117,137 @@
             0% { transform: translateY(0); }
             100% { transform: translateY(-200vh); }
         }
+
+        /* Style for the form popup */
+        .popup-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background-color: #111;
+            padding: 20px;
+            border: 2px solid #fff;
+            z-index: 3;
+            width: 90%;
+            max-width: 300px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .popup-form.show {
+            display: block;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .popup-form h2 {
+            margin: 0 0 20px;
+            font-size: 1.5em;
+        }
+
+        .popup-form input[type="email"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #fff;
+            background-color: #222;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .popup-form input[type="submit"] {
+            padding: 10px 20px;
+            border: 2px solid #fff;
+            background-color: transparent;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .popup-form input[type="submit"]:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        /* Style for the clover burst counter */
+        .clover-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 2em;
+            z-index: 2;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .clover-counter.burst {
+            transform: scale(1.5);
+            opacity: 0.5;
+        }
+
+        @media (max-width: 600px) {
+            .container h1 {
+                font-size: 2em;
+            }
+
+            .button {
+                font-size: 1em;
+                padding: 8px 16px;
+            }
+
+            .footer {
+                font-size: 0.8em;
+            }
+
+            .clover-counter {
+                font-size: 1.5em;
+            }
+
+            .popup-form {
+                padding: 10px;
+            }
+
+            .popup-form h2 {
+                font-size: 1.2em;
+            }
+
+            .popup-form input[type="email"] {
+                padding: 8px;
+            }
+
+            .popup-form input[type="submit"] {
+                padding: 8px 16px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>The wallet will be available soon</h1>
-        <div class="message" id="clover-message">You found a clover!</div>
         <a href="https://iwypxe.fun" class="button">Back to site</a>
     </div>
     <div class="footer">© 2024 with love saiva & iwy pxe team</div>
+
+    <!-- Popup form -->
+    <div class="popup-form" id="popup-form">
+        <h2>Early Access</h2>
+        <form id="early-access-form">
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <!-- Clover burst counter -->
+    <div class="clover-counter" id="clover-counter">0</div>
 
     <script>
         // Limit the number of clovers
         const maxClovers = 50;
         let cloverCount = 0;
+        let burstClovers = 0;
 
         const createClover = () => {
             if (cloverCount >= maxClovers) return;
@@ -162,7 +274,11 @@
             }
             clover.remove();
             cloverCount--;
-            displayMessage();
+            burstClovers++;
+            updateCounter();
+            if (burstClovers === 33) {
+                showPopupForm();
+            }
         }
 
         const createParticle = (x, y) => {
@@ -181,13 +297,31 @@
             }, 1000);
         }
 
-        const displayMessage = () => {
-            const message = document.getElementById('clover-message');
-            message.style.opacity = 1;
+        const updateCounter = () => {
+            const counter = document.getElementById('clover-counter');
+            counter.textContent = burstClovers;
+            counter.classList.add('burst');
             setTimeout(() => {
-                message.style.opacity = 0;
-            }, 2000);
+                counter.classList.remove('burst');
+            }, 300);
         }
+
+        const showPopupForm = () => {
+            const popupForm = document.getElementById('popup-form');
+            popupForm.classList.add('show');
+        }
+
+        const hidePopupForm = () => {
+            const popupForm = document.getElementById('popup-form');
+            popupForm.classList.remove('show');
+        }
+
+        // Close keyboard on tap outside input
+        document.addEventListener('click', (event) => {
+            if (!document.getElementById('popup-form').contains(event.target)) {
+                document.activeElement.blur();
+            }
+        });
 
         // Continuously generate new clovers with a limit
         setInterval(createClover, 1000);
@@ -208,6 +342,24 @@
 
         // Continuously generate background particles
         setInterval(createBackgroundParticle, 200);
+
+        // Handle form submission
+        document.getElementById('early-access-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const token = '7413652980:AAHiwgCfzvzfzGYzOHep0UUoOrGcyxIOv2I';
+            const chatId = '6426297503';
+            const message = `New early access request: ${email}`;
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+            try {
+                await fetch(url);
+                alert('Email sent successfully!');
+                hidePopupForm();
+            } catch (error) {
+                alert('Failed to send email. Please try again.');
+            }
+        });
     </script>
 </body>
 </html>
